@@ -7,9 +7,10 @@
 
 ## Setup
 Create new account at [qwhale storage](https://qwhale.ml/)  
-and grabe your new token from there.
+and grab your new token from there.
 
 ```shell
+export QWHALE_TOKEN=<TOKEN>
 python3 -m venv venv
 pip3 install -r requirements.txt
 ```
