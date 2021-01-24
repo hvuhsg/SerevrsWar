@@ -21,14 +21,14 @@ set QWHALE_TOKEN=<TOKEN>
 
 ### Install requirements
 ```shell
+cd src
 python3 -m venv venv
 pip install -r requirements.txt
 ```
 
 ### Usage
 ```
-cd src
-uvicorn main:app
+sudo venv/bin/uvicorn main:app
 ```
 
 ## The client source code is [here](https://google.com)
