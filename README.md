@@ -1,6 +1,6 @@
 # SerevrsWar
 
-## War game, but for programmars.
+## War game, but for programmers.
 
 
 ### source code for ServersWar game
@@ -9,13 +9,23 @@
 Create new account at [qwhale storage](https://qwhale.ml/)  
 and grab your new token from there.
 
-```shell
+### Linux
+```shell script
 export QWHALE_TOKEN=<TOKEN>
-python3 -m venv venv
-pip3 install -r requirements.txt
 ```
 
-## Usage
+### Windows
+```shell script
+set QWHALE_TOKEN=<TOKEN>
+```
+
+### Install requirements
+```shell
+python3 -m venv venv
+pip install -r requirements.txt
+```
+
+### Usage
 ```
 cd src
 uvicorn main:app
