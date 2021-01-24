@@ -17,7 +17,8 @@ pip3 install -r requirements.txt
 
 ## Usage
 ```
-python3 main.py --port 80
+cd src
+uvicorn main:app
 ```
 
 ## The client source code is [here](https://google.com)
