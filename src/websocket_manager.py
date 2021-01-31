@@ -19,6 +19,7 @@ class WSManager:
         self.not_connected_clients.pop(token, None)
 
     def add_load_range(self, token, load_range):
+        # TODO: optimize by saveing by range and not by token
         if token not in self.connections:
             if token not in self.not_connected_clients:
                 self.not_connected_clients[token] = {"map_load_squares": []}

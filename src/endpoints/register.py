@@ -41,6 +41,7 @@ async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager
     player.pop("_id")
 
     tile.pop("_id", None)
+    tile.pop("updated_at", None)
     await ws_manager.push_update(x, y, tile)
 
     return player

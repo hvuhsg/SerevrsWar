@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from db import get_db
 from websocket_manager import get_manager
@@ -18,6 +18,9 @@ async def get_map(
         db=Depends(get_db),
         ws_manager=Depends(get_manager)
 ):
+    player = db["players"].find_one({"token": token})
+    if not player:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Token")
     device_id = token + client_id
     range_view = min(MAX_CHUNK_SIZE, chunk_size)
 
