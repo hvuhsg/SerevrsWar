@@ -1,11 +1,14 @@
 from datetime import datetime
 from perlin_noise import PerlinNoise
+from cachetools import cached, TTLCache
 
-from config import PERLIN_NOISE_OCTAVES, RANDOMIZE_SEED
+
+from config import PERLIN_NOISE_OCTAVES, RANDOMIZE_SEED, CACHE_SIZE, CACHE_TIME
 
 noise = PerlinNoise(octaves=PERLIN_NOISE_OCTAVES, seed=RANDOMIZE_SEED)
 
 
+@cached(cache=TTLCache(maxsize=CACHE_SIZE, ttl=CACHE_TIME))
 def random_tile(x, y):
     # return (abs(x*y+x+y+round(sin(x+y)*10)) % 9) + 1
     distance_from_center = (x**2 + y**2)**0.5

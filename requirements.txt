@@ -1,3 +1,4 @@
+cachetools
 fastapi
 qwhale-client
 perlin-noise
