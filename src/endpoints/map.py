@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime
 
 from db import get_db
 from websocket_manager import get_manager
@@ -41,12 +42,11 @@ async def get_map(
             ]
         }
     )
-    # print([(r["x"], r["y"]) for r in results])
     dict_results = {}
     for tile in results:
         tile["power"] = updated_tile_power(tile, NEW_POWER_RATE)
         tile.pop("_id")
-        tile.pop("updated_at")
+        tile["updated_at"] = datetime.timestamp(tile["updated_at"])
         dict_results[f"{tile['x']},{tile['y']}"] = tile
 
     for xc in range(min_x, max_x+1):

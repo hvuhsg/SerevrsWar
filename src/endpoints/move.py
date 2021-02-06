@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from utils import random_tile, updated_tile_power
+from utils import random_tile, update_tile
 from config import NEW_POWER_RATE, START_MOVE_TIME, TIME_PER_MOVE
 from db import get_db
 from websocket_manager import get_manager
@@ -38,7 +38,10 @@ async def move(
     src = db["map"].find_one({"x": src_x, "y": src_y})
     dst = db["map"].find_one({"x": dst_x, "y": dst_y})
 
-    src["power"] = updated_tile_power(src, NEW_POWER_RATE)
+    if src is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Source tile is not your's")
+
+    update_tile(src, NEW_POWER_RATE)  # Update src power and updated_at time
     if not power:
         power = src["power"]
 
@@ -50,8 +53,8 @@ async def move(
 
     src.pop("_id", None)
     dst.pop("_id", None)
-    src.pop("updated_at", None)
-    dst.pop("updated_at", None)
+    src["updated_at"] = datetime.timestamp(src["updated_at"])
+    dst["updated_at"] = datetime.timestamp(dst["updated_at"])
 
     await ws_manager.push_update(src_x, src_y, src)
     await ws_manager.push_update(dst_x, dst_y, dst)
@@ -125,7 +128,7 @@ def update_tiles(src, dst, dst_x, dst_y, power, player, db):
         game_tile = True  # It is no one tile (not registered in the db)
         dst = {"x": dst_x, "y": dst_y, "power": random_tile(dst_x, dst_y) - power, "owner": None}
 
-    dst["power"] = updated_tile_power(dst, NEW_POWER_RATE)
+    update_tile(dst, NEW_POWER_RATE)  # Update src power and updated_at time
 
     if dst["power"] < 0:
         dst["power"] *= -1
@@ -133,21 +136,24 @@ def update_tiles(src, dst, dst_x, dst_y, power, player, db):
 
     src["power"] = src["power"] - power
 
-    db["map"].update_one({"_id": src["_id"]}, {"$set": {"power": src["power"], "updated_at": datetime.now()}})
+    #  Save src and dst changes to db
+    db["map"].update_one({"_id": src["_id"]}, {"$set": {"power": src["power"], "updated_at": src["updated_at"]}})
     if not game_tile:
         db["map"].update_one(
             {"_id": dst["_id"]},
-            {"$set": {"power": dst["power"], "owner": dst["owner"], "updated_at": datetime.now()}}
+            {"$set": {"power": dst["power"], "owner": dst["owner"], "updated_at": dst["updated_at"]}}
         )
-    else:
+    else:  # If dst tile is first time player owned
+        update_time = datetime.now()
         db["map"].insert_one(
             {
                 "x": dst_x,
                 "y": dst_y,
                 "power": dst["power"],
                 "owner": dst.get("owner", None),
-                "updated_at": datetime.now()
+                "updated_at": update_time,
             }
         )
+        dst["updated_at"] = update_time
 
     return src, dst
