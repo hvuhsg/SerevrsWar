@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from utils import random_tile, update_tile
-from config import NEW_POWER_RATE, START_MOVE_TIME, TIME_PER_MOVE
+from config import NEW_POWER_RATE, GAME_START_TIME, TIME_PER_MOVE
 from db import get_db
 from websocket_manager import get_manager
 
@@ -64,11 +64,11 @@ async def move(
 
 def turn_validations(token, played_players):
     global turn
-    game_started = datetime.now() < START_MOVE_TIME
-    time_until_game_starting = (START_MOVE_TIME - datetime.now()).total_seconds()
-    current_turn = (datetime.now() - START_MOVE_TIME).total_seconds() // TIME_PER_MOVE.total_seconds()
+    game_started = datetime.now() < GAME_START_TIME
+    time_until_game_starting = (GAME_START_TIME - datetime.now()).total_seconds()
+    current_turn = (datetime.now() - GAME_START_TIME).total_seconds() // TIME_PER_MOVE.total_seconds()
     time_until_next_turn = TIME_PER_MOVE.total_seconds() \
-                           - (datetime.now() - START_MOVE_TIME).total_seconds() \
+                           - (datetime.now() - GAME_START_TIME).total_seconds() \
                            % TIME_PER_MOVE.total_seconds()
     time_until_playable_turn = time_until_next_turn + TIME_PER_MOVE.total_seconds()
 

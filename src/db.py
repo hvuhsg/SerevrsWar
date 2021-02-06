@@ -16,7 +16,10 @@ def setup_db():
 
 
 def shutdown_db():
-    client.close()
+    try:
+        db.close()
+    finally:
+        client.close()
 
 
 def get_db():

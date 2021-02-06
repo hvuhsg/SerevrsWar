@@ -1,3 +1,4 @@
+from typing import Tuple
 from datetime import datetime, timedelta
 from perlin_noise import PerlinNoise
 from cachetools import cached, TTLCache
@@ -9,7 +10,7 @@ noise = PerlinNoise(octaves=PERLIN_NOISE_OCTAVES, seed=RANDOMIZE_SEED)
 
 
 @cached(cache=TTLCache(maxsize=CACHE_SIZE, ttl=CACHE_TIME))
-def random_tile(x, y):
+def random_tile(x: int, y: int) -> int:
     distance_from_center = (x**2 + y**2)**0.5
     return abs(round(noise([x/1000, y/1000])*50 + distance_from_center // 10))
 
@@ -35,7 +36,10 @@ def update_tile(tile, new_power_rate):
     tile["updated_at"] = datetime.now()
 
 
-def coordinates_to_chunk(x, y, chunk_size):
+def coordinates_to_chunk(x: int, y: int, chunk_size: int) -> Tuple[int, int]:
+    """
+    Convert x, y coordinates to chunk coordinates
+    """
     normal_x = x // chunk_size
     normal_y = y // chunk_size
     middle_x = normal_x*chunk_size+(chunk_size//2)
