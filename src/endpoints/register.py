@@ -36,12 +36,14 @@ async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager
             break
     tile = {"x": x, "y": y, "power": 50, "owner": name, "updated_at": datetime.now()}
     db["map"].insert_one(tile)
+
     player = {"name": name, "token": token, "spawn_point": {"x": x, "y": y}}
     db["players"].insert_one(player)
-    player.pop("_id")
 
     tile.pop("_id", None)
-    tile.pop("updated_at", None)
+    player.pop("_id", None)
+    tile["updated_at"] = tile["updated_at"].timestamp()
+
     await ws_manager.push_update(x, y, tile)
 
     return player
