@@ -20,5 +20,5 @@ def gui_map(request: Request, token: str, db=Depends(get_db)):
     x = sum_x // len(tiles)
     y = sum_y // len(tiles)
 
-    return RedirectResponse(url=f"/gui/index.html?x={x}&y={y}")
+    return RedirectResponse(url=f"/gui/index.html?x={x}&y={y}&token={token}")
 
