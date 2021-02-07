@@ -2,5 +2,5 @@ cachetools
 fastapi
 qwhale-client
 perlin-noise
-uvicorn
+uvicorn[standard]
 aiofiles
