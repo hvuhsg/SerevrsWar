@@ -27,7 +27,7 @@ function loadMap(x=0, y=0, range_view=35){
         }
     }
   });
-  updated = 20;
+  updated += 100;
 }
 
 function loadMe(){
@@ -36,7 +36,7 @@ function loadMe(){
     me = response;
     map = Object.assign(map, response);
   });
-  updated = 20;
+  updated += 100;
 }
 
 function updateMap(event){
@@ -56,5 +56,5 @@ function updateMap(event){
         }
         players[name].tiles[mapKey] = tile;
     }
-    updated = 20;
+    updated += 100;
 }

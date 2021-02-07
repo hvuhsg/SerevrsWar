@@ -1,5 +1,5 @@
 let token;
-let updated = 20;
+let updated = 800;
 
 function preload() {
     let params = getURLParams();

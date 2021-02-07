@@ -97,7 +97,7 @@ function moveToCoords(){
 function doubleClicked() {
     showPower = !showPower;
     console.log(rxoff, ryoff, szoff);
-    updated = 20;
+    updated = 80;
 }
 
 function mouseDragged() {
@@ -105,7 +105,7 @@ function mouseDragged() {
     yoff += mouseY - pmouseY;
     rxoff += mouseX - pmouseX;
     ryoff += mouseY - pmouseY;
-    updated = 20;
+    updated = 80;
 }
 
 function mouseWheel(event){
@@ -115,5 +115,5 @@ function mouseWheel(event){
     dim = max(100 + szoff, 20)
     _width = width + (dim - width % dim);
     _height = height + (dim - height % dim);
-    updated = 20;
+    updated = 80;
 }
