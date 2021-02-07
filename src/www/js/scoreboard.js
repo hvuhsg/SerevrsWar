@@ -1,5 +1,3 @@
-var printed = false;
-
 function drawScoreBoard(){
     push();
     colorMode(RGB, 255);
@@ -23,11 +21,6 @@ function drawScoreBoard(){
 
     nplayers.sort(compare);
     nplayers.reverse();
-
-    if (!printed){
-        console.log(nplayers);
-        printed = true;
-    }
 
     for (player in nplayers){
         player = nplayers[player];    
