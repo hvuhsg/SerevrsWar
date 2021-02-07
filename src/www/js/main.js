@@ -1,5 +1,5 @@
 let token;
-let updated = true;
+let updated = 20;
 
 function preload() {
     let params = getURLParams();
@@ -21,7 +21,7 @@ function draw() {
     if (!updated){
         return
     }
-    updated = false;
+    updated -= 1;
     background(255);
     drawBoard();
     drawScoreBoard();
