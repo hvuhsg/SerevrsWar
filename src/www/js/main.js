@@ -1,3 +1,4 @@
+let token;
 function preload() {
     let params = getURLParams();
     token = params.token;
