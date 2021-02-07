@@ -4,7 +4,7 @@ var apiHost = "https://game.qwhale.ml"
 
 
 function setupWebSocket(){
-    var wsHost = 'ws://' + `game.qwhale.ml/ws?token=${token}&client_id=${client_id}`;
+    var wsHost = 'wss://' + `game.qwhale.ml/ws?token=${token}&client_id=${client_id}`;
     websocket = new WebSocket(wsHost);
     websocket.onmessage = updateMap;
 }
