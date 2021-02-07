@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from db import setup_db, shutdown_db
 
@@ -8,6 +9,7 @@ from endpoints import move
 from endpoints import register
 from endpoints import me
 from endpoints import websocket
+from endpoints import web_map
 
 
 app = FastAPI()
@@ -23,6 +25,8 @@ app.include_router(move.router)
 app.include_router(register.router)
 app.include_router(me.router)
 app.include_router(websocket.router)
+app.include_router(web_map.router)
+app.mount("/gui", StaticFiles(directory="www"), name="gui")
 
 
 @app.on_event("startup")
