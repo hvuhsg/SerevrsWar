@@ -3,12 +3,14 @@ function preload() {
 }
 
 function setup() {
+    let params = getURLParams();
     createCanvas(windowWidth - 15, windowHeight - 15);
     setupWebSocket();
     defultColor = color(169, 169, 169);
     dim = Math.max(100 + szoff, 20);
     _width = width + (dim - width % dim);
     _height = height + (dim - height % dim);
+    token = params.token;
     moveToCoords();
 }
 

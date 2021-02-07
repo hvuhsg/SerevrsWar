@@ -3,3 +3,4 @@ fastapi
 qwhale-client
 perlin-noise
 uvicorn
+aiofiles

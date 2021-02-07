@@ -1,6 +1,6 @@
 var websocket;
 var client_id = "GUI-ID";
-var token = "9e2e6311-b12a-48e2-850d-a8e0d6315eb7";
+var token;
 var wsHost = 'ws://' + `localhost:8000/ws?token=${token}&client_id=${client_id}`;
 var apiHost = "http://localhost:8000"
 
