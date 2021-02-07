@@ -1,6 +1,6 @@
 var websocket;
 var client_id = "GUI-ID";
-var apiHost = "http://game.qwhale.ml"
+var apiHost = "https://game.qwhale.ml"
 
 
 function setupWebSocket(){
