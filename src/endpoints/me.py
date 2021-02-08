@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime
 
 from db import get_db
-from config import TIME_PER_MOVE, GAME_START_TIME
+from config import TIME_PER_MOVE, GAME_START_TIME, MOVES_PER_TURN
 
 router = APIRouter()
 
@@ -22,6 +22,7 @@ def me(token: str, db=Depends(get_db)):
         "player": player,
         "game": {
             "started": game_started,
-            "time_per_move": TIME_PER_MOVE.total_seconds()
+            "time_per_move": TIME_PER_MOVE.total_seconds(),
+            "moves_per_turn": MOVES_PER_TURN
         }
     }

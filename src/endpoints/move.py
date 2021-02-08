@@ -1,8 +1,9 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
+from collections import defaultdict
 
 from utils import random_tile, update_tile
-from config import NEW_POWER_RATE, GAME_START_TIME, TIME_PER_MOVE
+from config import NEW_POWER_RATE, GAME_START_TIME, TIME_PER_MOVE, MOVES_PER_TURN
 from db import get_db
 from websocket_manager import get_manager
 
@@ -10,7 +11,7 @@ from websocket_manager import get_manager
 router = APIRouter()
 
 
-players_that_play_this_turn = set()
+players_that_play_this_turn = defaultdict(lambda: {"moves": MOVES_PER_TURN}.copy())
 turn = 0
 
 
@@ -49,7 +50,7 @@ async def move(
     # TILES VALIDATION STUFF
 
     src, dst = update_tiles(src, dst, dst_x, dst_y, power, player, db)
-    played_players.add(token)
+    played_players[token]["moves"] -= 1
 
     src.pop("_id", None)
     dst.pop("_id", None)
@@ -89,7 +90,9 @@ def turn_validations(token, played_players):
         played_players.clear()
         turn = current_turn
 
-    if token in played_players:
+    print(played_players[token])
+
+    if played_players[token]["moves"] <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"You already play this turn, wait {time_until_playable_turn} seconds until next turn",
