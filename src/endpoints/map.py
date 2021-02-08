@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from datetime import datetime
 
 from db import get_db
 from websocket_manager import get_manager
-from config import MAX_CHUNK_SIZE, NEW_POWER_RATE
+from config import MAX_CHUNK_SIZE
 from objects.tile import Tile
-from utils import random_tile, updated_tile_power, coordinates_to_chunk
+from utils import coordinates_to_chunk
 
 router = APIRouter()
 
