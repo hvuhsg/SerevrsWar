@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from config import SPAWN_RANGE, INITIAL_POWER
 from db import get_db
 from websocket_manager import get_manager
+from objects.tile import Tile
 
 
 router = APIRouter()
@@ -34,16 +35,15 @@ async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager
             if list(results):
                 continue
             break
-    tile = {"x": x, "y": y, "power": INITIAL_POWER, "owner": name, "updated_at": datetime.now()}
-    db["map"].insert_one(tile)
+    tile_dict = {"x": x, "y": y, "power": INITIAL_POWER, "owner": name, "updated_at": datetime.now()}
+    tile = Tile.from_dict(tile_dict)
+    tile.save()  # db["map"].insert_one(tile)
 
     player = {"name": name, "token": token, "spawn_point": {"x": x, "y": y}}
     db["players"].insert_one(player)
 
-    tile.pop("_id", None)
     player.pop("_id", None)
-    tile["updated_at"] = tile["updated_at"].timestamp()
 
-    await ws_manager.push_update(x, y, tile)
+    await ws_manager.push_update(x, y, tile.to_json_dict())
 
     return player

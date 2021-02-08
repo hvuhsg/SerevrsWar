@@ -3,18 +3,90 @@ from datetime import datetime
 
 from perlin_noise import PerlinNoise
 
-from config import PERLIN_NOISE_OCTAVES, RANDOMIZE_SEED
+from config import PERLIN_NOISE_OCTAVES, RANDOMIZE_SEED, NEW_POWER_RATE
 from db import get_db
 
 noise = PerlinNoise(octaves=PERLIN_NOISE_OCTAVES, seed=RANDOMIZE_SEED)
 
 
 class Tile:
-    def __init__(self, x: int, y: int, power: int, updated_at: Union[datetime, None] = None):
+    def __init__(
+            self,
+            x: int,
+            y: int,
+            power: int,
+            owner: Union[str, None] = None,
+            updated_at: Union[datetime, None] = None,
+            _id=None
+    ):
         self.x = x
         self.y = y
-        self.power = power
+        self._power = power
+        self.owner = owner
         self.updated_at = updated_at
+
+    @property
+    def power(self):
+        power_per_time = 0
+        if self.owner:
+            now = datetime.now()
+            power_per_time = (now - self.updated_at) // NEW_POWER_RATE
+        return self._power + power_per_time
+
+    def save(self):
+        # TODO: save the _id for performers search
+        db = get_db()
+        return db["map"].insert_one(self.to_dict())
+
+    def update(self):
+        db = get_db()
+        tile_dict = self.to_dict()
+        tile_dict.pop("x")
+        tile_dict.pop("y")
+        return db["map"].update_one(
+            {"x": self.x, "y": self.y},
+            {"$set": tile_dict}
+        )
+
+    def to_json_dict(self):
+        """
+        Json compilable dict
+        """
+        tile_dict = self.to_dict()
+        if tile_dict["updated_at"]:
+            tile_dict["updated_at"] = tile_dict["updated_at"].timestamp()
+        return tile_dict
+
+    def to_dict(self):
+        return {"x": self.x, "y": self.y, "power": self._power, "owner": self.owner, "updated_at": self.updated_at}
+
+    def distance(self, other_tile):
+        return ((self.x - other_tile.x)**2 + (self.y - other_tile.y)**2)**0.5
+
+    def transfer_power(self, other_tile, power):
+        self._power -= power
+        other_tile._power += power
+        self.update()
+        other_tile.update()
+
+    def attack(self, other_tile, power):
+        saved = False
+        self._power -= power
+        other_tile._power = power - other_tile.power
+        if other_tile.power <= 0:
+            other_tile._power = other_tile.power * -1
+            if other_tile.owner is None:
+                other_tile.save()
+        elif other_tile.owner:
+            other_tile.owner = self.owner
+        elif other_tile.owner is None:
+            other_tile.owner = self.owner
+            other_tile.updated_at = datetime.now()
+            other_tile.save()
+            saved = True
+        self.update()
+        if not saved:  # Do not update updated tile
+            other_tile.update()
 
     @classmethod
     def from_dict(cls, tile_dict):
@@ -24,9 +96,20 @@ class Tile:
     def get(cls, x, y):
         db = get_db()
         tile_dict = db["map"].find_one({"x": x, "y": y})
-        if not tile_dict:
-            tile_dict = {"x": x, "y": y, "power": Tile.generate_tile_power(x, y)}
-        return Tile.from_dict(tile_dict)
+        if tile_dict is None:
+            return
+        return cls.from_dict(tile_dict)
+
+    @classmethod
+    def generate_tile(cls, x, y):
+        tile_dict = {"x": x, "y": y, "power": Tile.generate_tile_power(x, y)}
+        return cls.from_dict(tile_dict)
+
+    @staticmethod
+    def has_owner(x, y):
+        db = get_db()
+        tile_dict = db["map"].find_one({"x": x, "y": y})
+        return tile_dict is not None
 
     @staticmethod
     def generate_tile_power(x, y):

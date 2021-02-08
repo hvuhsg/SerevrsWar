@@ -4,6 +4,7 @@ from datetime import datetime
 from db import get_db
 from websocket_manager import get_manager
 from config import MAX_CHUNK_SIZE, NEW_POWER_RATE
+from objects.tile import Tile
 from utils import random_tile, updated_tile_power, coordinates_to_chunk
 
 router = APIRouter()
@@ -43,16 +44,14 @@ async def get_map(
         }
     )
     dict_results = {}
-    for tile in results:
-        tile["power"] = updated_tile_power(tile, NEW_POWER_RATE)
-        tile.pop("_id")
-        tile["updated_at"] = datetime.timestamp(tile["updated_at"])
-        dict_results[f"{tile['x']},{tile['y']}"] = tile
+    for tile_dict in results:
+        tile = Tile.from_dict(tile_dict)
+        dict_results[f"{tile.x},{tile.y}"] = tile.to_json_dict()
 
     for xc in range(min_x, max_x+1):
         for yc in range(min_y, max_y+1):
             if not dict_results.get(f"{xc},{yc}", None):
-                dict_results[f"{xc},{yc}"] = {"x": xc, "y": yc, "power": random_tile(xc, yc), "owner": None}
+                dict_results[f"{xc},{yc}"] = Tile.generate_tile(xc, yc).to_json_dict()
 
     ws_manager.add_load_range(device_id, {"x": x, "y": y, "chunk_size": chunk_size})
 
