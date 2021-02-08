@@ -90,8 +90,6 @@ def turn_validations(token, played_players):
         played_players.clear()
         turn = current_turn
 
-    print(played_players[token])
-
     if played_players[token]["moves"] <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
