@@ -4,6 +4,8 @@ from datetime import timedelta, datetime
 MAX_CHUNK_SIZE = 35
 SPAWN_RANGE = 2  # Initial range for spawning (got bigger automatically if needed)
 
+INITIAL_POWER = 50
+
 PERLIN_NOISE_OCTAVES = 50
 RANDOMIZE_SEED = 1
 
