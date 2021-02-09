@@ -39,9 +39,9 @@ async def move(
     if dst is None:
         dst = Tile.generate_tile(dst_x, dst_y)
 
+    tiles_related_validation(power, src, dst, player)
     if power is None:
         power = src.power
-    tiles_related_validation(power, src, dst, player)
 
     move_the_power(src, dst, power)
     played_players[token]["moves"] -= 1
@@ -92,6 +92,9 @@ def turn_validations(token, played_players):
 def tiles_related_validation(power, src, dst, player):
     if src is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Source tile is not your's")
+
+    if power is None:
+        power = src.power
 
     if power <= 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Power mast be grater then zero")
