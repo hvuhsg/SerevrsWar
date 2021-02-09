@@ -1,11 +1,12 @@
-from datetime import datetime
 from random import randint
-from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
 
-import config
+from config import SPAWN_RANGE, INITIAL_POWER
 from db import get_db
 from websocket_manager import get_manager
+from utils import time_now
+from objects.tile import Tile
+from objects.player import Player
 
 
 router = APIRouter()
@@ -13,15 +14,15 @@ router = APIRouter()
 
 @router.post("/register")
 async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager)):
-    spawn_range = config.SPAWN_RANGE
-    if db["players"].find_one({"name": name}):
+    spawn_range = SPAWN_RANGE  # By value
+    if Player.name_exist(name):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Name already exist")
-    token = str(uuid4())
+    token = Player.generate_token()
 
     while True:
         x, y = randint(-spawn_range, spawn_range), randint(-spawn_range, spawn_range)
         spawn_range += 2
-        tile = db["map"].find_one({"x": x, "y": y})
+        tile = Tile.get(x, y)  # db["map"].find_one({"x": x, "y": y})
         if not tile:
             results = db["map"].find({
                 "$and": [
@@ -34,16 +35,12 @@ async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager
             if list(results):
                 continue
             break
-    tile = {"x": x, "y": y, "power": 50, "owner": name, "updated_at": datetime.now()}
-    db["map"].insert_one(tile)
+    tile = Tile(x=x, y=y, power=INITIAL_POWER, owner=name, updated_at=time_now())
+    tile.save()  # == db["map"].insert_one(tile)
 
-    player = {"name": name, "token": token, "spawn_point": {"x": x, "y": y}}
-    db["players"].insert_one(player)
+    player = Player(name=name, token=token, spawn_point={"x": x, "y": y})
+    player.save()
 
-    tile.pop("_id", None)
-    player.pop("_id", None)
-    tile["updated_at"] = tile["updated_at"].timestamp()
+    await ws_manager.push_update(x, y, tile.to_json_dict())
 
-    await ws_manager.push_update(x, y, tile)
-
-    return player
+    return player.to_dict()

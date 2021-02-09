@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from datetime import datetime
 
 from db import get_db
 from websocket_manager import get_manager
-from config import MAX_CHUNK_SIZE, NEW_POWER_RATE
-from utils import random_tile, updated_tile_power, coordinates_to_chunk
+from config import MAX_CHUNK_SIZE
+from objects.tile import Tile
+from objects.player import Player
+from utils import coordinates_to_chunk
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ async def get_map(
         db=Depends(get_db),
         ws_manager=Depends(get_manager)
 ):
-    player = db["players"].find_one({"token": token})
+    player = Player.get(token)
     if not player:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Token")
     device_id = token + client_id
@@ -43,16 +44,14 @@ async def get_map(
         }
     )
     dict_results = {}
-    for tile in results:
-        tile["power"] = updated_tile_power(tile, NEW_POWER_RATE)
-        tile.pop("_id")
-        tile["updated_at"] = datetime.timestamp(tile["updated_at"])
-        dict_results[f"{tile['x']},{tile['y']}"] = tile
+    for tile_dict in results:
+        tile = Tile.from_dict(tile_dict)
+        dict_results[f"{tile.x},{tile.y}"] = tile.to_json_dict()
 
     for xc in range(min_x, max_x+1):
         for yc in range(min_y, max_y+1):
             if not dict_results.get(f"{xc},{yc}", None):
-                dict_results[f"{xc},{yc}"] = {"x": xc, "y": yc, "power": random_tile(xc, yc), "owner": None}
+                dict_results[f"{xc},{yc}"] = Tile.generate_tile(xc, yc).to_json_dict()
 
     ws_manager.add_load_range(device_id, {"x": x, "y": y, "chunk_size": chunk_size})
 

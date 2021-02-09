@@ -1,15 +1,14 @@
-from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from collections import defaultdict
 
-from utils import random_tile, update_tile
-from config import NEW_POWER_RATE, GAME_START_TIME, TIME_PER_MOVE, MOVES_PER_TURN
+from config import GAME_START_TIME, TIME_PER_MOVE, MOVES_PER_TURN
 from db import get_db
+from objects.tile import Tile
+from objects.player import Player
 from websocket_manager import get_manager
-
+from utils import time_now
 
 router = APIRouter()
-
 
 players_that_play_this_turn = defaultdict(lambda: {"moves": MOVES_PER_TURN}.copy())
 turn = 0
@@ -27,49 +26,40 @@ async def move(
         ws_manager=Depends(get_manager),
         played_players=Depends(lambda: players_that_play_this_turn)
 ):
-    player = db["players"].find_one({"token": token})
+    player = Player.get(token)
     if not player:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Token")
 
-    # TURN RELATED VALIDATION STUFF
+    # TURN VALIDATION
     turn_validations(token, played_players)
-    # TURN RELATED VALIDATION STUFF
 
-    # TILES VALIDATION STUFF
-    src = db["map"].find_one({"x": src_x, "y": src_y})
-    dst = db["map"].find_one({"x": dst_x, "y": dst_y})
+    # TILES VALIDATION
+    src = Tile.get(src_x, src_y)  # get the tile from the db
+    dst = Tile.get(dst_x, dst_y)
+    if dst is None:
+        dst = Tile.generate_tile(dst_x, dst_y)
 
-    if src is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Source tile is not your's")
+    if power is None:
+        power = src.power
+    tiles_related_validation(power, src, dst, player)
 
-    update_tile(src, NEW_POWER_RATE)  # Update src power and updated_at time
-    if not power:
-        power = src["power"]
-
-    tiles_related_validation(power, src, dst, src_x, src_y, dst_x, dst_y, player)
-    # TILES VALIDATION STUFF
-
-    src, dst = update_tiles(src, dst, dst_x, dst_y, power, player, db)
+    move_the_power(src, dst, power)
     played_players[token]["moves"] -= 1
 
-    src.pop("_id", None)
-    dst.pop("_id", None)
-    src["updated_at"] = datetime.timestamp(src["updated_at"])
-    dst["updated_at"] = datetime.timestamp(dst["updated_at"])
+    await ws_manager.push_update(src_x, src_y, src.to_json_dict())
+    await ws_manager.push_update(dst_x, dst_y, dst.to_json_dict())
 
-    await ws_manager.push_update(src_x, src_y, src)
-    await ws_manager.push_update(dst_x, dst_y, dst)
-
-    return {"src": src, "dst": dst}
+    return {"src": src.to_json_dict(), "dst": dst.to_json_dict()}
 
 
 def turn_validations(token, played_players):
     global turn
-    game_started = datetime.now() < GAME_START_TIME
-    time_until_game_starting = (GAME_START_TIME - datetime.now()).total_seconds()
-    current_turn = (datetime.now() - GAME_START_TIME).total_seconds() // TIME_PER_MOVE.total_seconds()
+    now = time_now()
+    game_started = now < GAME_START_TIME
+    time_until_game_starting = (GAME_START_TIME - now).total_seconds()
+    current_turn = (now - GAME_START_TIME).total_seconds() // TIME_PER_MOVE.total_seconds()
     time_until_next_turn = TIME_PER_MOVE.total_seconds() \
-                           - (datetime.now() - GAME_START_TIME).total_seconds() \
+                           - (now - GAME_START_TIME).total_seconds() \
                            % TIME_PER_MOVE.total_seconds()
     time_until_playable_turn = time_until_next_turn + TIME_PER_MOVE.total_seconds()
 
@@ -99,62 +89,31 @@ def turn_validations(token, played_players):
     return turn
 
 
-def tiles_related_validation(power, src, dst, src_x, src_y, dst_x, dst_y, player):
-    if power is not None and power < 1:
+def tiles_related_validation(power, src, dst, player):
+    if src is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Source tile is not your's")
+
+    if power <= 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Power mast be grater then zero")
 
-    if ((src_x - dst_x) ** 2 + (src_y - dst_y) ** 2) ** 0.5 != 1:
+    if src.distance(dst) != 1:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The src tile and the dst tile are not neighbors"
         )
 
-    if not src or src["owner"] != player["name"]:
+    if src.owner != player.name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The source tile is not your's")
 
-    if power > src["power"]:
+    if power > src.power:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The source tile has not enough power")
 
-    if src["power"] == 0:
+    if src.power == 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The source tile has no power")
 
 
-def update_tiles(src, dst, dst_x, dst_y, power, player, db):
-    game_tile = False  # The tile has owner
-    if dst and dst["owner"] != player["name"]:
-        dst["power"] = dst["power"] - power
-    elif dst and dst["owner"] == player["name"]:
-        dst["power"] = dst["power"] + power
+def move_the_power(src, dst, power):
+    if src.owner == dst.owner:
+        src.transfer_power(dst, power)
     else:
-        game_tile = True  # It is no one tile (not registered in the db)
-        dst = {"x": dst_x, "y": dst_y, "power": random_tile(dst_x, dst_y) - power, "owner": None}
-
-    update_tile(dst, NEW_POWER_RATE)  # Update src power and updated_at time
-
-    if dst["power"] < 0:
-        dst["power"] *= -1
-        dst["owner"] = player["name"]
-
-    src["power"] = src["power"] - power
-
-    #  Save src and dst changes to db
-    db["map"].update_one({"_id": src["_id"]}, {"$set": {"power": src["power"], "updated_at": src["updated_at"]}})
-    if not game_tile:
-        db["map"].update_one(
-            {"_id": dst["_id"]},
-            {"$set": {"power": dst["power"], "owner": dst["owner"], "updated_at": dst["updated_at"]}}
-        )
-    else:  # If dst tile is first time player owned
-        update_time = datetime.now()
-        db["map"].insert_one(
-            {
-                "x": dst_x,
-                "y": dst_y,
-                "power": dst["power"],
-                "owner": dst.get("owner", None),
-                "updated_at": update_time,
-            }
-        )
-        dst["updated_at"] = update_time
-
-    return src, dst
+        src.attack(dst, power)
