@@ -1,15 +1,14 @@
-from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from collections import defaultdict
 
 from config import GAME_START_TIME, TIME_PER_MOVE, MOVES_PER_TURN
 from db import get_db
 from objects.tile import Tile
+from objects.player import Player
 from websocket_manager import get_manager
-
+from utils import time_now
 
 router = APIRouter()
-
 
 players_that_play_this_turn = defaultdict(lambda: {"moves": MOVES_PER_TURN}.copy())
 turn = 0
@@ -27,7 +26,7 @@ async def move(
         ws_manager=Depends(get_manager),
         played_players=Depends(lambda: players_that_play_this_turn)
 ):
-    player = db["players"].find_one({"token": token})
+    player = Player.get(token)
     if not player:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Token")
 
@@ -55,11 +54,12 @@ async def move(
 
 def turn_validations(token, played_players):
     global turn
-    game_started = datetime.now() < GAME_START_TIME
-    time_until_game_starting = (GAME_START_TIME - datetime.now()).total_seconds()
-    current_turn = (datetime.now() - GAME_START_TIME).total_seconds() // TIME_PER_MOVE.total_seconds()
+    now = time_now()
+    game_started = now < GAME_START_TIME
+    time_until_game_starting = (GAME_START_TIME - now).total_seconds()
+    current_turn = (now - GAME_START_TIME).total_seconds() // TIME_PER_MOVE.total_seconds()
     time_until_next_turn = TIME_PER_MOVE.total_seconds() \
-                           - (datetime.now() - GAME_START_TIME).total_seconds() \
+                           - (now - GAME_START_TIME).total_seconds() \
                            % TIME_PER_MOVE.total_seconds()
     time_until_playable_turn = time_until_next_turn + TIME_PER_MOVE.total_seconds()
 
@@ -102,7 +102,7 @@ def tiles_related_validation(power, src, dst, player):
             detail="The src tile and the dst tile are not neighbors"
         )
 
-    if src.owner != player["name"]:
+    if src.owner != player.name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The source tile is not your's")
 
     if power > src.power:
@@ -113,7 +113,6 @@ def tiles_related_validation(power, src, dst, player):
 
 
 def move_the_power(src, dst, power):
-    print(power)
     if src.owner == dst.owner:
         src.transfer_power(dst, power)
     else:

@@ -4,6 +4,7 @@ from db import get_db
 from websocket_manager import get_manager
 from config import MAX_CHUNK_SIZE
 from objects.tile import Tile
+from objects.player import Player
 from utils import coordinates_to_chunk
 
 router = APIRouter()
@@ -19,7 +20,7 @@ async def get_map(
         db=Depends(get_db),
         ws_manager=Depends(get_manager)
 ):
-    player = db["players"].find_one({"token": token})
+    player = Player.get(token)
     if not player:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Token")
     device_id = token + client_id

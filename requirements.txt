@@ -4,3 +4,4 @@ qwhale-client
 perlin-noise
 uvicorn[standard]
 aiofiles
+python-dotenv
