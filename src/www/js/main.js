@@ -20,7 +20,7 @@ function setup() {
 }
 
 function draw() {
-    if ((Date.now() - time) / 1000 >= me["game"]["power_growth_rate"]){
+    if (me && (Date.now() - time) / 1000 >= me["game"]["power_growth_rate"]){
         time = Date.now();
         updated += 10;
     }
