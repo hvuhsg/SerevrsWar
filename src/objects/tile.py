@@ -35,7 +35,7 @@ class Tile:
         if self.owner:
             now = time_now()
             power_per_time = (now - self.updated_at) // NEW_POWER_RATE
-            power_per_time = min(0, power_per_time)  # Redundant (But just in case)
+            power_per_time = max(0, power_per_time)  # Redundant (But just in case)
         return self._power + power_per_time
 
     def save(self):
