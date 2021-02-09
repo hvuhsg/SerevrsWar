@@ -34,7 +34,6 @@ function loadMe(){
     let url = apiHost + '/me?' + `token=${token}`;
   httpGet(url, 'json', false, function(response) {
     me = response;
-    map = Object.assign(map, response);
   });
   updated += 100;
 }

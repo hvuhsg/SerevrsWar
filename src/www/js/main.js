@@ -10,6 +10,7 @@ function preload() {
 function setup() {
     createCanvas(windowWidth - 15, windowHeight - 15);
     setupWebSocket();
+    loadMe();
     defultColor = color(169, 169, 169);
     dim = Math.max(100 + szoff, 20);
     _width = width + (dim - width % dim);
