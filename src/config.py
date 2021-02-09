@@ -13,8 +13,8 @@ PERLIN_NOISE_OCTAVES = 50
 RANDOMIZE_SEED = 1
 
 NEW_POWER_RATE = timedelta(minutes=1)  # Add 1 power unit per <NEW_POWER_RATE> time
-GAME_START_TIME = time_now() + timedelta(seconds=5)
-TIME_PER_MOVE = timedelta(seconds=1)
+GAME_START_TIME = time_now() + timedelta(seconds=10)
+TIME_PER_MOVE = timedelta(seconds=10)
 MOVES_PER_TURN = 5
 
 CACHE_SIZE = 1000000  # ITEMS (OBJECTS)
