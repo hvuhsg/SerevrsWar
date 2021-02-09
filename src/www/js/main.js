@@ -4,13 +4,13 @@ let updated = 400;
 function preload() {
     let params = getURLParams();
     token = params.token;
+    loadMe();
     loadMap(0, 0, 35);
 }
 
 function setup() {
     createCanvas(windowWidth - 15, windowHeight - 15);
     setupWebSocket();
-    loadMe();
     defultColor = color(169, 169, 169);
     dim = Math.max(100 + szoff, 20);
     _width = width + (dim - width % dim);
