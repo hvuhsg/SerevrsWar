@@ -15,7 +15,7 @@ function drawScoreBoard(){
     for (const [name, player] of Object.entries(players)) {
         nplayers.push({"score": 0, "name": name});
         for (const [mapKey, tile] of Object.entries(player.tiles)){
-            nplayers[nplayers.length-1].score += tile.power
+            nplayers[nplayers.length-1].score += CalculateTilePower(mapKey);
         }
     }
 

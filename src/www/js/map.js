@@ -47,11 +47,7 @@ function drawTile(x, y, x_index, y_index){
     let tileColor = color(169, 169, 169);
 
     if (mapKey in map){
-        power = map[mapKey].power;
-        if (map[mapKey].owner){
-            number_of_seconds = (Date.now() - Date.parse(map[mapKey].updated_at)) / 1000;
-            power += max(0, int(number_of_seconds / me["game"]["power_growth_rate"]))
-        }
+        power = CalculateTilePower(mapKey);
         name = map[mapKey].owner;
         tileColor = getPlayerColor(name);
     }

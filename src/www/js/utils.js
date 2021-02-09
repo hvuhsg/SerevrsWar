@@ -35,3 +35,13 @@ var stringToColour = function(str) {
     }
     return colour;
   }
+
+
+function CalculateTilePower(mapKey){
+    power = map[mapKey].power;
+    if (map[mapKey].owner){
+            number_of_seconds = (Date.now() - Date.parse(map[mapKey].updated_at)) / 1000;
+            power += Math.max(0, int(number_of_seconds / me["game"]["power_growth_rate"]))
+    }
+    return power;
+}
