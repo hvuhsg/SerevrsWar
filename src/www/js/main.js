@@ -1,5 +1,6 @@
 let token;
 let updated = 400;
+let time = Date.now();
 
 function preload() {
     let params = getURLParams();
@@ -19,6 +20,10 @@ function setup() {
 }
 
 function draw() {
+    if ((Date.now() - time) / 1000 >= me["game"]["power_growth_rate"]){
+        time = Date.now();
+        updated += 10;
+    }
     if (!updated){
         return
     }
