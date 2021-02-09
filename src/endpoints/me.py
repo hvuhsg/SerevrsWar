@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from db import get_db
-from config import TIME_PER_MOVE, GAME_START_TIME, MOVES_PER_TURN
+from config import TIME_PER_MOVE, GAME_START_TIME, MOVES_PER_TURN, NEW_POWER_RATE
 from utils import time_now
 from objects.player import Player
 
@@ -26,6 +26,7 @@ def me(token: str, db=Depends(get_db)):
         "game": {
             "started": game_started,
             "time_per_move": TIME_PER_MOVE.total_seconds(),
-            "moves_per_turn": MOVES_PER_TURN
+            "moves_per_turn": MOVES_PER_TURN,
+            "power_growth_rate": NEW_POWER_RATE.total_seconds(),
         }
     }
