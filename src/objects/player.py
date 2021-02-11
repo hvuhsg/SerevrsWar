@@ -5,17 +5,18 @@ from db import get_db
 
 
 class Player:
-    def __init__(self, name, token, spawn_point):
+    def __init__(self, name, token, spawn_point, user=None):
         self.token = token
         self.name = name
         self.spawn_point = spawn_point
+        self.user = user
 
     def save(self):
         db = get_db()
         db["players"].insert_one(self.to_dict())
 
     def to_dict(self):
-        return {"name": self.name, "token": self.token, "spawn_point": self.spawn_point}
+        return {"name": self.name, "token": self.token, "spawn_point": self.spawn_point, "user": self.user}
 
     @staticmethod
     def name_exist(name):
