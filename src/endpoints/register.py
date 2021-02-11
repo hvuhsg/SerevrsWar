@@ -10,11 +10,12 @@ from objects.tile import Tile
 from objects.player import Player
 
 
+# Internal endpoint
 async def register(user: dict):
     print(user)
     db = get_db()
     ws_manager = get_manager()
-    name = user["name"]
+    name = user["name"].split(" ")[0]
 
     spawn_range = SPAWN_RANGE  # By value
     if Player.name_exist(name):
