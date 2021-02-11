@@ -26,6 +26,7 @@ oauth.register(
 @google_login_app.route('/login')
 async def login(request: Request):
     redirect_uri = str(request.base_url) + "google_account/auth"
+    print(redirect_uri)
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
