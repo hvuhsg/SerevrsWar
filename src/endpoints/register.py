@@ -1,5 +1,6 @@
 from random import randint
-from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi import status, HTTPException
 
 from config import SPAWN_RANGE, INITIAL_POWER
 from db import get_db
@@ -9,11 +10,12 @@ from objects.tile import Tile
 from objects.player import Player
 
 
-router = APIRouter()
+async def register(user: dict):
+    print(user)
+    db = get_db()
+    ws_manager = get_manager()
+    name = user["name"]
 
-
-@router.post("/register")
-async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager)):
     spawn_range = SPAWN_RANGE  # By value
     if Player.name_exist(name):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Name already exist")
@@ -38,7 +40,7 @@ async def register(name: str, db=Depends(get_db), ws_manager=Depends(get_manager
     tile = Tile(x=x, y=y, power=INITIAL_POWER, owner=name, updated_at=time_now())
     tile.save()  # == db["map"].insert_one(tile)
 
-    player = Player(name=name, token=token, spawn_point={"x": x, "y": y})
+    player = Player(name=name, token=token, spawn_point={"x": x, "y": y}, user=user)
     player.save()
 
     await ws_manager.push_update(x, y, tile.to_json_dict())
