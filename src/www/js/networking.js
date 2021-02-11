@@ -40,8 +40,7 @@ function loadMe(){
 
 function updateMap(event){
     var updatedTile = event.data;
-    
-    console.log(JSON.parse(updatedTile));
+
     var tile = JSON.parse(updatedTile);
     var tile1 = Object();
     var mapKey = `${tile.x},${tile.y}`;
