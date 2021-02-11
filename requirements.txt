@@ -5,3 +5,5 @@ perlin-noise
 uvicorn[standard]
 aiofiles
 python-dotenv
+jinja2
+authlib
