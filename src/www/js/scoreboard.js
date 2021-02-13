@@ -22,7 +22,7 @@ function drawScoreBoard(){
     nplayers.sort(compare);
     nplayers.reverse();
 
-    for (player in nplayers){
+    for (player in nplayers.slice(0, 5)){
         player = nplayers[player];    
         fill(players[player.name].color);
         text(counter + ".   " + player.name + ` ${player.score}`, width - 190, 50+counter*40);
