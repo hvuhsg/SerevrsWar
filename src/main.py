@@ -42,9 +42,9 @@ def main_registration_page(request: Request):
     user = request.session.get("user", None)
     token = None
     connected = False
-    if user and user.get("email", None):
+    if user and user.get("identity_id", None):
         connected = True
-        token = db["players"].find_one({"user.email": user["email"]}, {"token": 1})["token"]
+        token = db["players"].find_one({"identity_id": user["identity_id"]}, {"token": 1})["token"]
     return templates.TemplateResponse("index.html", {"request": request, "connected": connected, "token": token})
 
 
