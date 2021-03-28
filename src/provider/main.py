@@ -27,7 +27,7 @@ oauth.register(
 
 @provider_login_app.route('/login')
 async def login(request: Request):
-    redirect_uri = request.url_for("auth")
+    redirect_uri = request.url_for("auth").replace("http://", "https://")
     return await oauth.provider.authorize_redirect(request, redirect_uri)
 
 
