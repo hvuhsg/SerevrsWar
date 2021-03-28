@@ -15,7 +15,7 @@ async def register(user: dict):
     print(user)
     db = get_db()
     ws_manager = get_manager()
-    name = randint(0, 99999999999999999999999999999999)
+    name = user["identity_id"]
 
     spawn_range = SPAWN_RANGE  # By value
     if Player.name_exist(name):

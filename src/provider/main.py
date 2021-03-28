@@ -39,7 +39,7 @@ async def auth(request: Request):
     user = await oauth.provider.get(url="/me", token=token)
     user = user.json()
 
-    account = db["players"].find_one({"identity_id": user["identity_id"]})
+    account = db["players"].find_one({"user.identity_id": user["identity_id"]})
     if not account:
         await register(user)
     if user.get("_id", None):
