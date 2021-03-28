@@ -28,7 +28,7 @@ oauth.register(
 @provider_login_app.route('/login')
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.provider.authorize_redirect(request, redirect_uri)
 
 
 @provider_login_app.route('/auth')
