@@ -1,0 +1,55 @@
+from fastapi import Request, APIRouter, Depends
+from fastapi.responses import RedirectResponse
+from starlette.config import Config
+from authlib.integrations.starlette_client import OAuth
+
+from db import get_db
+
+from endpoints.register import register
+
+provider_login_app = APIRouter()
+
+config = Config(env_file="./provider/.env")
+
+oauth = OAuth(config)
+
+oauth.register(
+    name='provider',
+    api_base_url='https://auth.qwhale.ml/',
+    access_token_url='https://auth.qwhale.ml/token',
+    authorize_url='https://auth.qwhale.ml/login',
+    access_token_params={
+        "client_id": config.get("PROVIDER_CLIENT_ID"),
+        "client_secret": config.get("PROVIDER_CLIENT_SECRET")
+    }
+)
+
+
+@provider_login_app.route('/login')
+async def login(request: Request):
+    redirect_uri = request.url_for("auth")
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@provider_login_app.route('/auth')
+async def auth(request: Request):
+    db = get_db()
+
+    token = await oauth.provider.authorize_access_token(request)
+    user = await oauth.provider.get(url="/me", token=token)
+    user = user.json()
+
+    account = db["players"].find_one({"indentity_id": user["indentity_id"]})
+    if not account:
+        await register(user)
+    if user.get("_id", None):
+        user.pop("_id")
+
+    request.session["user"] = user
+    return RedirectResponse("/")
+
+
+@provider_login_app.route('/logout')
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url='/')

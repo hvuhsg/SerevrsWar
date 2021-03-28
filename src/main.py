@@ -11,7 +11,7 @@ from endpoints import move
 from endpoints import me
 from endpoints import websocket
 from endpoints import web_map
-from google_login.main import google_login_app
+from provider.main import provider_login_app
 
 
 app = FastAPI()
@@ -29,7 +29,7 @@ app.include_router(move.router)
 app.include_router(me.router)
 app.include_router(websocket.router)
 app.include_router(web_map.router)
-app.include_router(google_login_app, prefix="/google_account")
+app.include_router(provider_login_app, prefix="/provider")
 
 app.mount("/gui", StaticFiles(directory="www"), name="gui")
 app.mount("/register_site", StaticFiles(directory="register_www"), name="register_www")
