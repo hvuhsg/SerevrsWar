@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from qwhale_client import APIClient
 
-# load_dotenv()
+load_dotenv(".env")
 TOKEN = os.getenv("QWHALE_TOKEN", None)
 
 if not TOKEN:
