@@ -25,16 +25,15 @@ oauth.register(
 )
 
 
-@provider_login_app.route('/login')
+@provider_login_app.get('/login')
 async def login(request: Request):
     redirect_uri = request.url_for("auth").replace("http://", "https://")
     return await oauth.provider.authorize_redirect(request, redirect_uri)
 
 
-@provider_login_app.route('/auth')
+@provider_login_app.get('/auth')
 async def auth(request: Request):
     db = get_db()
-    breakpoint()
     token = await oauth.provider.authorize_access_token(request)
     user = await oauth.provider.get(url="/me", token=token)
     user = user.json()
@@ -49,7 +48,7 @@ async def auth(request: Request):
     return RedirectResponse("/")
 
 
-@provider_login_app.route('/logout')
+@provider_login_app.get('/logout')
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url='/')
