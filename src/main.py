@@ -22,7 +22,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key="SJDI(ERGSDcC52")
+app.add_middleware(SessionMiddleware, secret_key="SJDI(asdasd878asdERGSDcC52")
 
 app.include_router(map.router)
 app.include_router(move.router)
