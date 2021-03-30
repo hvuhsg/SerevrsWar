@@ -44,7 +44,7 @@ async def auth(request: Request):
     if user.get("_id", None):
         user.pop("_id")
 
-    request.session["user"] = user
+    request.session["user"] = dict(user)
     breakpoint()
     return RedirectResponse(url="/")
 
