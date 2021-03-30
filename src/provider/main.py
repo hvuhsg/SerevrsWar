@@ -45,7 +45,8 @@ async def auth(request: Request):
         user.pop("_id")
 
     request.session["user"] = user
-    return RedirectResponse("/")
+    breakpoint()
+    return RedirectResponse(url="/")
 
 
 @provider_login_app.get('/logout')
