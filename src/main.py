@@ -38,6 +38,7 @@ templates = Jinja2Templates(directory="register_www")
 
 @app.get("/")
 def main_registration_page(request: Request):
+    print(request.session)
     db = get_db()
     user = request.session.get("user", None)
     token = None

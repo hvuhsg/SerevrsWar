@@ -46,6 +46,7 @@ async def auth(request: Request):
 
     request.session["user"] = dict(user)
     breakpoint()
+    print(request.session["user"])
     return RedirectResponse(url="/")
 
 
