@@ -46,7 +46,6 @@ async def auth(request: Request):
 
     request.session["user"] = dict(user)
     print(request.session["user"])
-    request.session.clear()
     return RedirectResponse(url="/")
 
 
