@@ -44,8 +44,9 @@ async def auth(request: Request):
     if user.get("_id", None):
         user.pop("_id")
 
-    request.session["user"] = dict(user)
-    print(request.session["user"])
+    session_data = {"identity_id": user["identity_id"]}
+
+    request.session["user"] = session_data
     return RedirectResponse(url="/")
 
 
