@@ -34,7 +34,7 @@ async def login(request: Request):
 @provider_login_app.route('/auth')
 async def auth(request: Request):
     db = get_db()
-
+    breakpoint()
     token = await oauth.provider.authorize_access_token(request)
     user = await oauth.provider.get(url="/me", token=token)
     user = user.json()
