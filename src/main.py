@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from qwhale_logs_client import init
 
 from db import setup_db, shutdown_db, get_db
 
@@ -51,6 +52,7 @@ def main_registration_page(request: Request):
 @app.on_event("startup")
 def startup():
     setup_db()
+    init(token="VLUysQ9G7kVyaLj-fQWY7kYhZmA", project="server-wars")
 
 
 @app.on_event("shutdown")

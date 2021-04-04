@@ -7,3 +7,4 @@ aiofiles
 python-dotenv
 jinja2
 authlib
+qwhale-logs-client
