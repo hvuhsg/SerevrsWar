@@ -31,4 +31,4 @@ pip install -r requirements.txt
 sudo venv/bin/uvicorn main:app
 ```
 
-## The client source code is [here](https://google.com)
+## The client source code is [here](https://github.com/hvuhsg/ClientWars)
